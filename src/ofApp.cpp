@@ -8,14 +8,20 @@ void ofApp::setup(){
 
     //make the spheres
     // x (- left, + right) | y ( + up, - down) | z (- farther away, + closer to camera)
-    Sphere s1(glm::vec3(0, 0, -1), 1.0, glm::vec3(1, 1, 0), 10); //yellow
-    Sphere s2(glm::vec3(-3, 0, -1), 1.2, glm::vec3(1,0,0)); //red
-    Sphere s3(glm::vec3(5, 3, -0.5), 1.0, glm::vec3(0, 1, 0),32); //green
-    Sphere s4(glm::vec3(-5, -2, -3), 3, glm::vec3(0, 0, 1), 5); //blue
+    Sphere s1(glm::vec3(0, 0, -1), 1.1, glm::vec3(1, 1, 0), 10); //yellow
+    Sphere s2(glm::vec3(-7, 0, 0), 1.3, glm::vec3(1,0,0)); //red (only diffuse)
+    Sphere s3(glm::vec3(3, 2, 1), 0.9, glm::vec3(0, 1, 0),5,0.5); //green (some where in between shiny and plain)
+    Sphere s4(glm::vec3(-5, -2, -3), 3, glm::vec3(0, 0, 1), 32,1.0); //blue (shiny)
     spheres.push_back(s1);
     spheres.push_back(s2);
     spheres.push_back(s3);
     spheres.push_back(s4);
+
+    //make the 2 light sources
+    LightSource pointLight(glm::vec3(500, 500, 500),0.2); //1 like sideways like a point light
+    LightSource sun(glm::vec3(0, 500, 0),0.7); // 1 right overhead like sun
+    lightSources.push_back(pointLight);
+    lightSources.push_back(sun);
    
     //adopted from Shirley's how the camera pos gets calced
     auto aspect_ratio = 16.0 / 9.0;
@@ -90,8 +96,8 @@ glm::vec3 ofApp::ray_color(Ray& r) {
         //point is in shadow
          //diffuse = 0, specular = 0, only ambient
         //calc 3 point light
-        LightSource pointLight(glm::vec3(0,100,100)); //temp here for now later will make 2
-        return this->calcThreePointLight(this->persistantRecord, pointLight);
+        
+        return this->calcThreePointLight(this->persistantRecord);
     }
     
     glm::vec3 unit_direction = glm::normalize(r.getDirection());
@@ -100,19 +106,44 @@ glm::vec3 ofApp::ray_color(Ray& r) {
     return (1.0 - a) * glm::vec3(1.0, 1.0, 0.0) + a * glm::vec3(0.0, 0.0, 1.0);
 }
 
-glm::vec3 ofApp::calcThreePointLight(HitRecord& record, LightSource& src) {
+glm::vec3 ofApp::calcThreePointLight(HitRecord& record) {
 
+    glm::vec3 N = glm::normalize(record.normal);
     glm::vec3 V = glm::normalize(camera_center - record.pointColision); //viewpos - intersect point
-    glm::vec3 L = glm::normalize(src.lightPosition - record.pointColision);//lightpos - intersect point
+    glm::vec3 color = this->lightSources[0].ambient * record.objectAlbedo; //first set to ambient at least
+    
 
-    glm::vec3 R = glm::normalize(-L + (2.0 * record.normal * glm::dot(L, record.normal)));
+    for (LightSource& src : this->lightSources) {
+        //Shadow test first
+        //Fire ray towards light source(point light)
+        //If intersects with something closer than the light,
+        //point is in shadow
+        auto ray_direction = glm::normalize(src.lightPosition - record.pointColision);
+        Ray shadowRay(record.pointColision, ray_direction);
 
-    float diffuse = std::fmax(glm::dot(record.normal, L), 0.0);
+        HitRecord tempRecord;
+        bool isAnythingHit = false;
+        auto closestSoFar = this->infinity;
+        //given the ray loop over all the objects in the scene
+        for (Sphere& s : this->spheres) {
+            if (s.isHit(shadowRay, 1e-3f, closestSoFar, tempRecord)) {
+                return color;
 
-    float specular = pow(std::fmax(glm::dot(V, R), 0.0), record.highlightStrengh) * src.specularStrength;
+            }
+        }
 
-    glm::vec3 result = (diffuse + specular + src.ambient) * record.objectAlbedo;
-    return result;
+
+        glm::vec3 L = glm::normalize(src.lightPosition - record.pointColision);
+
+        glm::vec3 R = glm::normalize(-L + (2.0 * N * glm::dot(L, N)));
+
+        float diffuse = std::max(glm::dot(N, L), 0.0f);
+
+        float specular = pow(std::fmax(glm::dot(V, R), 0.0), record.highlightStrengh) * src.specularStrength;
+        color += (diffuse * record.objectAlbedo) + (specular * record.shininess);
+    }
+
+    return color;
     
 }
 

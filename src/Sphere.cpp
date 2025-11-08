@@ -1,7 +1,7 @@
 #include "Sphere.h"
 
-Sphere::Sphere(glm::vec3 sphereCenter, double sphereRadius, glm::vec3 color, float highlights): center(sphereCenter), 
-radius(sphereRadius), albedo(color), highlights(highlights) {}
+Sphere::Sphere(glm::vec3 sphereCenter, double sphereRadius, glm::vec3 color, float highlights, float shininess): 
+	center(sphereCenter), radius(sphereRadius), albedo(color), highlights(highlights), shininess(shininess) {}
 
 //main logic from Shirley's book
 bool Sphere::isHit(Ray& r, double ray_tmin, double ray_tmax, HitRecord& record) {
@@ -31,6 +31,7 @@ bool Sphere::isHit(Ray& r, double ray_tmin, double ray_tmax, HitRecord& record) 
 	record.pointColision = r.at(record.t);
 	record.objectAlbedo = this->albedo;
 	record.highlightStrengh = this->highlights;
+	record.shininess = this->shininess;
 	glm::vec3 outwardNormal = (record.pointColision - this->center) / this->radius;
 	record.setFaceNormal(r, outwardNormal);
 
