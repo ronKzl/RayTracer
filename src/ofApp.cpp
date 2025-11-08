@@ -10,7 +10,7 @@ void ofApp::setup(){
 
     
    
-
+    //from shirley how camera pos and ray per pixel get calced
     auto aspect_ratio = 16.0 / 9.0;
     int image_width = 400;
 
@@ -46,9 +46,12 @@ void ofApp::setup(){
         //std::clog << "\rScanlines remaining: " << (image_height - y) << ' ' << std::flush;
         for (int x = 0; x < image_width; x++) { //i
             
+            //for each pixel make a ray
             auto pixel_center = pixel00_loc + (x * pixel_delta_u) + (y * pixel_delta_v);
             auto ray_direction = pixel_center - camera_center;
             Ray r(camera_center, ray_direction);
+            //for each object detect the ray intersections (so loop over all objects and for this ray have an array of t values get smallest t)
+
             
             pix.setColor(x, y, ray_color(r));
         }
@@ -58,10 +61,20 @@ void ofApp::setup(){
     renderImg.save("raycast_output.png");
 }
 
-ofFloatColor ofApp::ray_color(const Ray& r) {
+ofFloatColor ofApp::ray_color(Ray& r) {
+    
+    Sphere s(glm::vec3(0, 0, -1), 0.5);
+    double t = r.hitSphere(&s);
+    if (t > 0.0) {
+        glm::vec3 N = glm::normalize(r.at(t) - glm::vec3(0, 0, -1));
+        
+        return 0.5*ofFloatColor(N.x +1.0, N.y +1.0,N.z +1.0);
+    }
+    
     glm::vec3 unit_direction = glm::normalize(r.getDirection());
     auto a = 0.5 * (unit_direction.y + 1.0);
-    return (1.0 - a) * ofFloatColor(1.0, 1.0, 1.0) + a * ofFloatColor(0.5, 0.7, 1.0);
+    //from Shirley - alpha = 1 yellow, to blue
+    return (1.0 - a) * ofFloatColor(1.0, 1.0, 1.0) + a * ofFloatColor(0.0, 0.0, 1.0);
 }
 
 //--------------------------------------------------------------
