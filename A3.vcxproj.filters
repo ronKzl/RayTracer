@@ -13,6 +13,9 @@
     <ClCompile Include="src\Ray.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\LightSource.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -27,6 +30,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Ray.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LightSource.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

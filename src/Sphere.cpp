@@ -1,8 +1,9 @@
 #include "Sphere.h"
 
-Sphere::Sphere(glm::vec3 sphereCenter, double sphereRadius): center(sphereCenter), radius(sphereRadius) {}
+Sphere::Sphere(glm::vec3 sphereCenter, double sphereRadius, glm::vec3 color, float highlights): center(sphereCenter), 
+radius(sphereRadius), albedo(color), highlights(highlights) {}
 
-
+//main logic from Shirley's book
 bool Sphere::isHit(Ray& r, double ray_tmin, double ray_tmax, HitRecord& record) {
 	glm::vec3 oc = this->center - r.getOrigin();
 	auto a = glm::length2(r.getDirection());
@@ -16,7 +17,7 @@ bool Sphere::isHit(Ray& r, double ray_tmin, double ray_tmax, HitRecord& record) 
 
 	auto sqrtd = std::sqrt(discriminant);
 
-	//find nearest rood that lies in the range
+	//smallest t test
 	auto root = (h - sqrtd) / a;
 	if (root <= ray_tmin || root >= ray_tmax) {
 		root = (h + sqrtd) / a;
@@ -27,8 +28,10 @@ bool Sphere::isHit(Ray& r, double ray_tmin, double ray_tmax, HitRecord& record) 
 
 	
 	record.t = root;
-	record.p = r.at(record.t);
-	glm::vec3 outwardNormal = (record.p - this->center) / this->radius;
+	record.pointColision = r.at(record.t);
+	record.objectAlbedo = this->albedo;
+	record.highlightStrengh = this->highlights;
+	glm::vec3 outwardNormal = (record.pointColision - this->center) / this->radius;
 	record.setFaceNormal(r, outwardNormal);
 
 

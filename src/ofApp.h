@@ -2,19 +2,17 @@
 
 #include "ofMain.h"
 #include "Sphere.h"
+#include "LightSource.h"
 #include "math.h"
 
 class ofApp : public ofBaseApp{
 
 	public:
 		void setup();
-		void update();
 		void draw();
 
-		void keyPressed(int key);
 		
-
-        
+		glm::vec3 camera_center = glm::vec3(0, 0, 10);
 		const double infinity = std::numeric_limits<double>::infinity();
 		std::vector<Sphere> spheres;
 		HitRecord persistantRecord;
@@ -23,5 +21,6 @@ class ofApp : public ofBaseApp{
 
 		glm::vec3 ray_color( Ray& r);
 
-        
+		glm::vec3 calcThreePointLight(HitRecord& record, LightSource& src);
+  
 };
