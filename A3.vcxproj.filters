@@ -10,12 +10,6 @@
     <ClCompile Include="src\Sphere.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Ray.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\LightSource.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">

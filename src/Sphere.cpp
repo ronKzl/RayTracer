@@ -1,9 +1,13 @@
 #include "Sphere.h"
-
+// ctor
 Sphere::Sphere(glm::vec3 sphereCenter, double sphereRadius, glm::vec3 color, float highlights, float shininess): 
 	center(sphereCenter), radius(sphereRadius), albedo(color), highlights(highlights), shininess(shininess) {}
 
-//main logic from Shirley's book
+// main discriminant calculation logic taken and adopted from Shirley's book
+/*
+Calculates the discriminant to see if there is an intersection between the ray and the sphere object that is calling
+this function.
+*/
 bool Sphere::isHit(Ray& r, double ray_tmin, double ray_tmax, HitRecord& record) {
 	glm::vec3 oc = this->center - r.getOrigin();
 	auto a = glm::length2(r.getDirection());
@@ -17,7 +21,7 @@ bool Sphere::isHit(Ray& r, double ray_tmin, double ray_tmax, HitRecord& record) 
 
 	auto sqrtd = std::sqrt(discriminant);
 
-	//smallest t test
+	// smallest t test, check if its within the min and max, if not then its not the smallest
 	auto root = (h - sqrtd) / a;
 	if (root <= ray_tmin || root >= ray_tmax) {
 		root = (h + sqrtd) / a;
@@ -26,9 +30,9 @@ bool Sphere::isHit(Ray& r, double ray_tmin, double ray_tmax, HitRecord& record) 
 		}
 	}
 
-	
+	// intersection determined record the data
 	record.t = root;
-	record.pointColision = r.at(record.t);
+	record.pointColision = r.at(record.t); // calc surface normal
 	record.objectAlbedo = this->albedo;
 	record.highlightStrengh = this->highlights;
 	record.shininess = this->shininess;

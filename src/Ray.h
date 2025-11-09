@@ -1,6 +1,6 @@
 #pragma once
 #include "ofMain.h"
-//adopted from Shirley's book
+// adopted from Shirley's book, represents the ray in the world space
 class Ray {
 public:
     Ray() {}
@@ -13,6 +13,6 @@ public:
     const glm::vec3& getDirection() const { return direction; }
 
     glm::vec3 at(double t) {
-        return origin + (direction * t);
+        return origin + (direction * t); // Q + dt
     }
 };

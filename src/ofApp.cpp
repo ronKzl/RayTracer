@@ -1,40 +1,35 @@
-//Ron Stuchevsky | 101188412
+// Ron Stuchevsky | 101188412
 #include "ofApp.h"
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    ofSetWindowTitle("Ray Caster");
-    ofSetFrameRate(60);
+    ofSetWindowTitle("A3-Raycasting");
 
-    //make the spheres
+
+    // make the spheres
     // x (- left, + right) | y ( + up, - down) | z (- farther away, + closer to camera)
-    Sphere s1(glm::vec3(0, 0, -1), 1.1, glm::vec3(1, 1, 0), 10); //yellow
-    Sphere s2(glm::vec3(-7, 0, 0), 1.3, glm::vec3(1,0,0)); //red (only diffuse)
-    Sphere s3(glm::vec3(3, 2, 1), 0.9, glm::vec3(0, 1, 0),5,0.5); //green (some where in between shiny and plain)
-    Sphere s4(glm::vec3(-5, -2, -3), 3, glm::vec3(0, 0, 1), 32,1.0); //blue (shiny)
+    Sphere s1(glm::vec3(0, 0, -1), 1.1, glm::vec3(1, 1, 0), 2, 0.2); //yellow at the center
+    Sphere s2(glm::vec3(0, -2, 3), 0.5, glm::vec3(1,0,0)); //red (only diffuse) at the front bottom
+    // green (some where in between shiny and plain) to the right and at the front of yellow which makes it cast a shadow on it.
+    Sphere s3(glm::vec3(3, 0, 1), 2, glm::vec3(0, 1, 0),5, 0.1); 
+    Sphere s4(glm::vec3(-5, -2, -3), 3, glm::vec3(0, 0, 1), 32, 1.0); //blue (shiny) at the back
     spheres.push_back(s1);
     spheres.push_back(s2);
     spheres.push_back(s3);
     spheres.push_back(s4);
 
-    //make the 2 light sources
-    LightSource pointLight(glm::vec3(500, 500, 500),0.2); //1 like sideways like a point light
-    LightSource sun(glm::vec3(0, 500, 0),0.7); // 1 right overhead like sun
+    // make the 2 light sources
+    LightSource pointLight(glm::vec3(500, 500, 500),0.7); //1 diagonal strong point light
+    LightSource side(glm::vec3(100, 0, 0),0.1); // 1 from the side weaker
     lightSources.push_back(pointLight);
-    lightSources.push_back(sun);
+    lightSources.push_back(side);
    
-    //adopted from Shirley's how the camera pos gets calced
-    auto aspect_ratio = 16.0 / 9.0;
-    int image_width = 800;
-
+    // following code adopted from Shirley's way of calculating the image and camera position
     // Calculate the image height, and ensure that it's at least 1.
     int image_height = int(image_width / aspect_ratio);
     image_height = (image_height < 1) ? 1 : image_height;
 
     // Camera
-
-    auto focal_length = 2.0;
-    auto viewport_height = 2.0;
     auto viewport_width = viewport_height * (double(image_width) / image_height);
     
 
@@ -54,11 +49,11 @@ void ofApp::setup(){
     renderImg.allocate(image_width, image_height, OF_IMAGE_COLOR);
     ofPixels& pix = renderImg.getPixels();
     
-    //loop over img pixels
+    // loop over img pixels
     for (int y = 0; y < image_height; y++) { //j
         for (int x = 0; x < image_width; x++) { //i
             
-            //for each pixel make a ray
+            // for each pixel make a ray
             auto pixel_center = pixel00_loc + (x * pixel_delta_u) + (y * pixel_delta_v);
             auto ray_direction = pixel_center - camera_center;
             Ray r(camera_center, ray_direction);
@@ -71,13 +66,16 @@ void ofApp::setup(){
     renderImg.update();
     renderImg.save("raycast_output.png");
 }
-
+/*
+Raycast and determine if the ray intersects with any of the spheres, if it is calculate the pixels color,
+else set the pixels color to a gradient between yellow and blue since it hit the sky.
+*/
 glm::vec3 ofApp::ray_color(Ray& r) {
     
     HitRecord tempRecord;
     bool isAnythingHit = false;
     auto closestSoFar = this->infinity;
-    //given the ray loop over all the objects in the scene
+    // given the ray loop over all the objects in the scene
     for (Sphere& s : this->spheres) {
         if (s.isHit(r, 0, closestSoFar, tempRecord)) {
           
@@ -87,52 +85,52 @@ glm::vec3 ofApp::ray_color(Ray& r) {
             
         }
     }
-    //compute the color if we hit anything
+    // compute the color if we hit anything
     if (isAnythingHit) {
-        //shadow test first
-        // Shadow test
-        //Fire ray towards light source(point light)
-        //If intersects with something closer than the light,
-        //point is in shadow
-         //diffuse = 0, specular = 0, only ambient
-        //calc 3 point light
-        
         return this->calcThreePointLight(this->persistantRecord);
     }
-    
+    // else just sky color
     glm::vec3 unit_direction = glm::normalize(r.getDirection());
     auto a = 0.5 * (unit_direction.y + 1.0);
     
     return (1.0 - a) * glm::vec3(1.0, 1.0, 0.0) + a * glm::vec3(0.0, 0.0, 1.0);
 }
 
+/*
+Calculate phong three term lighting and shadow test for an intersection
+*/
 glm::vec3 ofApp::calcThreePointLight(HitRecord& record) {
 
     glm::vec3 N = glm::normalize(record.normal);
-    glm::vec3 V = glm::normalize(camera_center - record.pointColision); //viewpos - intersect point
-    glm::vec3 color = this->lightSources[0].ambient * record.objectAlbedo; //first set to ambient at least
+    glm::vec3 V = glm::normalize(camera_center - record.pointColision); // viewpos - intersect point
+    glm::vec3 color = this->lightSources[0].ambient * record.objectAlbedo; // first set color to ambient (at minimum will be that)
     
-
+    // loop over the light sources in the scenes to calculate diffuse and specular for all of them and sum them up.
     for (LightSource& src : this->lightSources) {
-        //Shadow test first
-        //Fire ray towards light source(point light)
-        //If intersects with something closer than the light,
-        //point is in shadow
+        // Shadow test first
+        // Fire ray towards light source(point light)
+        
         auto ray_direction = glm::normalize(src.lightPosition - record.pointColision);
         Ray shadowRay(record.pointColision, ray_direction);
 
         HitRecord tempRecord;
-        bool isAnythingHit = false;
-        auto closestSoFar = this->infinity;
-        //given the ray loop over all the objects in the scene
+        bool gotBlocked = false;
+        
+        // If intersects with something closer than the light
         for (Sphere& s : this->spheres) {
-            if (s.isHit(shadowRay, 1e-3f, closestSoFar, tempRecord)) {
-                return color;
+            if (s.isHit(shadowRay, 1e-3f, this->infinity, tempRecord)) {
+                // got blocked for this light source
+                gotBlocked = true; 
+                break;
 
             }
         }
 
+        if (gotBlocked) {
+            continue; // blocked for this light source so continue to the next one, might be able to reach it
+        }
 
+        // else not blocked for the light source calc the diffuse and specular terms for the light source
         glm::vec3 L = glm::normalize(src.lightPosition - record.pointColision);
 
         glm::vec3 R = glm::normalize(-L + (2.0 * N * glm::dot(L, N)));
@@ -149,8 +147,7 @@ glm::vec3 ofApp::calcThreePointLight(HitRecord& record) {
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    renderImg.draw(0,0);
-
+    renderImg.draw(0,0); 
 }
 
 

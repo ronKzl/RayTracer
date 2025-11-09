@@ -226,10 +226,8 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\LightSource.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
-    <ClCompile Include="src\Ray.cpp" />
     <ClCompile Include="src\Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
