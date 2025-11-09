@@ -6,17 +6,20 @@ void ofApp::setup(){
     ofSetWindowTitle("A3-Raycasting");
 
 
-    // make the spheres
+    // making the spheres
     // x (- left, + right) | y ( + up, - down) | z (- farther away, + closer to camera)
     Sphere s1(glm::vec3(0, 0, -1), 1.1, glm::vec3(1, 1, 0), 2, 0.2); //yellow at the center
     Sphere s2(glm::vec3(0, -2, 3), 0.5, glm::vec3(1,0,0)); //red (only diffuse) at the front bottom
     // green (some where in between shiny and plain) to the right and at the front of yellow which makes it cast a shadow on it.
     Sphere s3(glm::vec3(3, 0, 1), 2, glm::vec3(0, 1, 0),5, 0.1); 
     Sphere s4(glm::vec3(-5, -2, -3), 3, glm::vec3(0, 0, 1), 32, 1.0); //blue (shiny) at the back
+
+    Sphere s5(glm::vec3(0, -6, 0), 4, glm::vec3(0, 1, 1),32,0.5); //cyan 1/2 shiny (only rendering half of it, useful for showing shadow and the raycasting draw order using t)
     spheres.push_back(s1);
     spheres.push_back(s2);
     spheres.push_back(s3);
     spheres.push_back(s4);
+    spheres.push_back(s5);
 
     // make the 2 light sources
     LightSource pointLight(glm::vec3(500, 500, 500),0.7); //1 diagonal strong point light
@@ -110,19 +113,19 @@ glm::vec3 ofApp::calcThreePointLight(HitRecord& record) {
         // Shadow test first
         // Fire ray towards light source(point light)
         
-        auto ray_direction = glm::normalize(src.lightPosition - record.pointColision);
-        Ray shadowRay(record.pointColision, ray_direction);
+        glm::vec3 rayDirection = glm::normalize(src.lightPosition - record.pointColision);
+        Ray shadowRay(record.pointColision, rayDirection);
 
         HitRecord tempRecord;
         bool gotBlocked = false;
         
         // If intersects with something closer than the light
         for (Sphere& s : this->spheres) {
+                           // min not 0 because then it would instantly detect the sphere itself as obstructing itself and shade, so small offset solves that.
             if (s.isHit(shadowRay, 1e-3f, this->infinity, tempRecord)) {
                 // got blocked for this light source
                 gotBlocked = true; 
                 break;
-
             }
         }
 
