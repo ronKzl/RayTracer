@@ -2,7 +2,7 @@
 #include <ofMain.h>
 #include "Ray.h"
 
-// adopted from Shirley's book, holds all the relevant info about the closest sphere hit
+// adopted from Shirley's book, holds all the relevant info about the closest point hit
 class HitRecord {
 public:
 	glm::vec3 pointColision; // the exact colission point in the world

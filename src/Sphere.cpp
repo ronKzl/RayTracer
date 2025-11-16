@@ -3,7 +3,7 @@
 Sphere::Sphere(glm::vec3 sphereCenter, double sphereRadius, glm::vec3 color, float highlights, float shininess): 
 	center(sphereCenter), radius(sphereRadius), albedo(color), highlights(highlights), shininess(shininess) {}
 
-// main discriminant calculation logic taken and adopted from Shirley's book
+// main discriminant calculation logic taken from Shirley's book
 /*
 Calculates the discriminant to see if there is an intersection between the ray and the sphere object that is calling
 this function.

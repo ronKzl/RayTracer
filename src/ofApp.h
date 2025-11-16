@@ -12,12 +12,12 @@ class ofApp : public ofBaseApp{
 		void draw();
 
 		// constants for calculating screen and camera position
-		glm::vec3 camera_center = glm::vec3(0, 0, 10);
+		glm::vec3 cameraCenter = glm::vec3(0, 0, 10);
 		const double infinity = std::numeric_limits<double>::infinity();
-		const float aspect_ratio = 16.0 / 9.0;
-		const int image_width = 1024;
-		const float focal_length = 2.0;
-		const float viewport_height = 2.0;
+		const float aspectRatio = 16.0 / 9.0;
+		const int imageWidth = 1024;
+		const float focalLength = 2.0;
+		const float viewportHeight = 2.0;
 
 
 		std::vector<Sphere> spheres;
