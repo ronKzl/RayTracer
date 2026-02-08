@@ -1,35 +1,22 @@
-Ron Stuchevsky | 101188412
-COMP 4900 A3
+# C++ Raytracer
 
+A real-time 3D raycasting engine built with **C++** and the **openFrameworks** framework. This project implements core computer graphics algorithms, including ray-sphere intersection, Phong 3-point lighting, and shadow mapping.
 
-========================================================
-Code Breakdown
-========================================================
+![Raycast Output](raycast_output.png)
 
-ofApp - Responsible for setting up the image dimension, camera view, doing the raycasting algorithm, as well as calculating the 
-3 point lighting and shadow test, then coloring each pixel in the image accordingly.
+## 🛠 Technical Implementation
 
-Ray - a helper class useful for defining a ray object that will be intersecting with the world objects.
+### Core Architecture
+* **ofApp**: Manages the main rendering loop, camera viewport settings, and per-pixel color determination through raycasting.
+* **Ray Class**: A utility class defining rays with an origin and direction to facilitate world-space intersection calculations.
+* **Sphere Logic**: Handles 3D sphere representation and implements a discriminant-based algorithm to detect ray intersections. It utilizes a `HitRecord` to store critical intersection data such as surface normals, collision points, and material properties (albedo, shininess).
+* **LightSource**: Defines point lights within the world, supporting the calculation of specular and ambient light components.
 
-Sphere - defines how a sphere object is represented in the world and how to calculate if the sphere is hit, 
-	also holds the definition for a helper HitRecord class which holds the relevant info from a registered hit about the sphere
-	that is used later to compute its color.
+### Lighting and Shading
+The engine features a robust **Phong lighting model** that calculates the final pixel color by summing the ambient, diffuse, and specular contributions from multiple light sources. To achieve realistic depth, the system performs a **shadow test** for every intersection point by casting secondary rays toward each light source to determine if the path is obstructed by other objects.
 
-LightSource - a helper class that defines a light source in the world, and holds useful info like its position that is used later 
-to calculate the spheres color if it is able to "see" the light source (passes raycast shadow test)
-
- 
-
-========================================================
-How to Run
-========================================================
-* Make a new oF project with the builder and pray it actually generates.
-
-* Drag the src folder from the zip here into the new project you generated to replace the empty src folder there.
-
-* Open visual studio and right click the src folder -> add -> existing item -> And select all the other files in the folder 
-to be added to the .vcxproj file of the solution (needs to be linked for the entire thing to build properly).
-
-* Build oFLib and then the project in debug/release x64 and hit the green run button in visual studio.
-(raycast image will be displayed or you can find it saved in the /bin/data folder of the project)
-
+## 🚀 Key Features
+* **Procedural Geometry**: Dynamic rendering of spheres with customizable positions, radii, and material properties.
+* **Multi-Light Support**: Concurrent calculation of lighting effects from multiple point lights with varying strengths.
+* **Atmospheric Gradients**: Implements a sky gradient for rays that do not intersect with objects.
+* **Shadow Mapping**: Accurate shadow generation based on object-light visibility.
